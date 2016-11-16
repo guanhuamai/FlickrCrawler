@@ -46,21 +46,21 @@ def data_guard(sock_conn, data_pool):
         if len(req) == 4 and unpack('i', req)[0] == 100:  # 100: request query url
             _url = data_pool.get_data()
             if len(_url) != 0:
-                sock_conn.send(pack('i', 888))  # send 888 to tell the data retrieved successfully
-                sock_conn.send(_url.encode('utf-8'))
+                sock_conn.send(_url[0].encode('utf-8'))
             else:
-                sock_conn.send(pack('i', 999))  # send 888 to tell the data retrieval failed
+                sock_conn.send('failure'.encode('utf-8'))
 
         elif len(req) == 4 and unpack('i', req)[0] == 200:  # 200: check if data_pool empty
             num_urls = data_pool.num_data()
             sock_conn.send(pack('i', num_urls))
 
         elif len(req) == 4 and unpack('i', req)[0] == 300:  # 300: request to save picture
+            sock_conn.send('ready'.encode('utf-8'))
             bin_pic_path = sock_conn.recv(1024)  # receive picture path
             if is_exit(bin_pic_path):
                 break
-
-            pic_data = sock_conn.recv(1024)  # receive picture data
+            sock_conn.send('ready'.encode('utf-8'))
+            pic_data = sock_conn.recv(102400)  # receive picture data
             if is_exit(pic_data):
                 break
 
@@ -70,8 +70,8 @@ def data_guard(sock_conn, data_pool):
 
         else:
             print 'not match anything!!'
-            sock_conn.send(pack('i', -1))  # send a none signal '0' to the client
-
+            break
+    print 'close service!\n'
     sock_conn.send(pack('i', -1))
     sock_conn.close()
 

@@ -10,21 +10,22 @@ from requests.exceptions import SSLError, ConnectionError
 
 class ProxyPool(object):
 
-    def __init__(self, capacity=1000):
+    def __init__(self, capacity=10):
         self.__list_proxies = list()
         self.__lock = threading.Lock()
         self.__capacity = capacity
 
     def __elephant_proxies(self):
-        print 'retrieve %d proxies from elephant' % self.__capacity
-        pattern = re.compile(r"\^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}\$")
+        print 'requesting %d proxies from elephant...\n' % self.__capacity
+        pattern = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}")
         html_text = ''
         try:
             html = requests.get('http://tpv.daxiangdaili.com/ip/?tid=559561186298989'
-                                '&num=%d&delay=1&category=2&foreign=only&filter=on' % self.__capacity)
+                                '&num=%d&delay=5&foreign=only' % self.__capacity)
             if html.status_code != 200:
                 return list()  # return empty list
             html_text = html.text
+            print html_text
         except SSLError:
             pass
         except ConnectionError:
@@ -58,17 +59,17 @@ def proxy_guard(sock_conn, proxy_pool):
         if is_exit(req):  # request exit
             break
 
-        if len(req) == 4 and unpack('i', req)[0] == 0:  # 400: request proxy
+        if len(req) == 4 and unpack('i', req)[0] == 400:  # 400: request proxy
             _proxies = proxy_pool.get_proxy()
             if len(_proxies) != 0:
-                sock_conn.send(pack('i', 888))  # send 888 to tell the data retrieved successfully
-                sock_conn.send(_proxies.encode('utf-8'))
+                print 'allocate %s' % _proxies
+                sock_conn.send(_proxies[0].encode('utf-8'))
             else:
-                sock_conn.send(pack('i', 999))  # send 888 to tell the data retrieval failed
+                sock_conn.send('failure'.encode('utf-8'))
 
         else:
             print 'not match anything!!'
-            sock_conn.send(pack('i', -1))  # send a exit signal '-1' to the client
+            break
 
     sock_conn.send(pack('i', -1))
     sock_conn.close()
