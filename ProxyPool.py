@@ -20,7 +20,7 @@ class ProxyPool(object):
         pattern = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}")
         html_text = ''
         try:
-            html = requests.get('http://tpv.daxiangdaili.com/ip/?tid=559561186298989'
+            html = requests.get('http://tpv.daxiangdaili.com/ip/?tid='
                                 '&num=%d&delay=5&foreign=only' % self.__capacity)
             if html.status_code != 200:
                 return list()  # return empty list
