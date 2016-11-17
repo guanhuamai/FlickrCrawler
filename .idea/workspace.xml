@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a43d85ac-3d8a-4a8c-9047-86b766d60852" name="Default" comment="">
+      <change type="DELETED" beforePath="$PROJECT_DIR$/master.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/slaver.log" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/DataPool.py" afterPath="$PROJECT_DIR$/DataPool.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/FlickrCrawlerSlaver.py" afterPath="$PROJECT_DIR$/FlickrCrawlerSlaver.py" />
@@ -25,11 +27,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="FlickrCrawlerSlaver.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="FlickrCrawlerSlaver.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/FlickrCrawlerSlaver.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="364">
-              <caret line="134" column="35" selection-start-line="134" selection-start-column="35" selection-end-line="134" selection-end-column="35" />
+            <state relative-caret-position="492">
+              <caret line="72" column="12" selection-start-line="72" selection-start-column="12" selection-end-line="72" selection-end-column="12" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -40,8 +42,8 @@
       <file leaf-file-name="DataPool.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/DataPool.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-162">
-              <caret line="24" column="23" selection-start-line="24" selection-start-column="23" selection-end-line="24" selection-end-column="23" />
+            <state relative-caret-position="402">
+              <caret line="60" column="21" selection-start-line="60" selection-start-column="21" selection-end-line="60" selection-end-column="21" />
               <folding>
                 <element signature="e#0#13#0" expanded="true" />
               </folding>
@@ -49,11 +51,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="ProxyPool.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="ProxyPool.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ProxyPool.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="414">
-              <caret line="23" column="41" selection-start-line="23" selection-start-column="41" selection-end-line="23" selection-end-column="41" />
+            <state relative-caret-position="114">
+              <caret line="50" column="0" selection-start-line="50" selection-start-column="0" selection-end-line="50" selection-end-column="0" />
               <folding>
                 <element signature="e#0#9#0" expanded="true" />
               </folding>
@@ -90,9 +92,9 @@
       <list>
         <option value="$PROJECT_DIR$/FlickrCrawlerMaster.py" />
         <option value="$PROJECT_DIR$/CrawlerMaster.py" />
-        <option value="$PROJECT_DIR$/DataPool.py" />
-        <option value="$PROJECT_DIR$/FlickrCrawlerSlaver.py" />
         <option value="$PROJECT_DIR$/ProxyPool.py" />
+        <option value="$PROJECT_DIR$/FlickrCrawlerSlaver.py" />
+        <option value="$PROJECT_DIR$/DataPool.py" />
       </list>
     </option>
   </component>
@@ -164,7 +166,7 @@
     <property name="last_opened_file_path" value="D:/tools/Python2.7/python.exe" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
   </component>
-  <component name="RunManager" selected="Python.CrawlerMaster">
+  <component name="RunManager" selected="Python.FlickrCrawlerSlaver">
     <configuration default="false" name="FlickrCrawlerMaster" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -357,8 +359,8 @@
     </list>
     <recent_temporary>
       <list size="3">
-        <item index="0" class="java.lang.String" itemvalue="Python.CrawlerMaster" />
-        <item index="1" class="java.lang.String" itemvalue="Python.FlickrCrawlerSlaver" />
+        <item index="0" class="java.lang.String" itemvalue="Python.FlickrCrawlerSlaver" />
+        <item index="1" class="java.lang.String" itemvalue="Python.CrawlerMaster" />
         <item index="2" class="java.lang.String" itemvalue="Python.FlickrCrawlerMaster" />
       </list>
     </recent_temporary>
@@ -415,7 +417,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="16" />
+      <option name="time" value="18" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -578,10 +580,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/FlickrCrawlerSlaver.py">
+    <entry file="file://$PROJECT_DIR$/ProxyPool.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="364">
-          <caret line="134" column="35" selection-start-line="134" selection-start-column="35" selection-end-line="134" selection-end-column="35" />
+        <state relative-caret-position="114">
+          <caret line="50" column="0" selection-start-line="50" selection-start-column="0" selection-end-line="50" selection-end-column="0" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
@@ -590,18 +592,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/DataPool.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-162">
-          <caret line="24" column="23" selection-start-line="24" selection-start-column="23" selection-end-line="24" selection-end-column="23" />
+        <state relative-caret-position="402">
+          <caret line="60" column="21" selection-start-line="60" selection-start-column="21" selection-end-line="60" selection-end-column="21" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/ProxyPool.py">
+    <entry file="file://$PROJECT_DIR$/FlickrCrawlerSlaver.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="414">
-          <caret line="23" column="41" selection-start-line="23" selection-start-column="41" selection-end-line="23" selection-end-column="41" />
+        <state relative-caret-position="492">
+          <caret line="72" column="12" selection-start-line="72" selection-start-column="12" selection-end-line="72" selection-end-column="12" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>

@@ -1,11 +1,12 @@
 import re
 import socket
+from socket import error as sock_error
 import requests
 import gevent
 from gevent import monkey
 from struct import pack
 from bs4 import BeautifulSoup
-from requests.exceptions import SSLError, ConnectionError, Timeout
+from requests.exceptions import SSLError, ConnectionError, Timeout, ChunkedEncodingError
 from os import path
 import threading
 
@@ -30,6 +31,8 @@ def get_active_proxy(sock_conn):
                 _proxy = None
             except Timeout:
                 _proxy = None
+            except ChunkedEncodingError:
+                _proxy = None
     print 'successfully got proxy %s\n' % _proxy
     return _proxy
 
@@ -47,6 +50,10 @@ def get_next_url(sock_conn):
                 _url = ret
         except UnicodeDecodeError:
             print 'decode error line 40...\n'
+            break
+        except sock_error:
+            print 'socket error'
+            break
     return _url
 
 
@@ -120,6 +127,9 @@ def corout_crawl(p_addr, d_addr):
             except Timeout:
                 print 'timeout error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
+            except ChunkedEncodingError:
+                print 'chuncked encoding error, retrieve another proxy...\n'
+                _proxy = get_active_proxy(_proxy_sock)
             except TypeError:
                 print 'type error...'
                 _id, _url = get_next_task(_data_sock, _data_lock)
@@ -137,6 +147,9 @@ def corout_crawl(p_addr, d_addr):
                 _proxy = get_active_proxy(_proxy_sock)
             except Timeout:
                 print 'timeout error, retrieve another proxy...\n'
+                _proxy = get_active_proxy(_proxy_sock)
+            except ChunkedEncodingError:
+                print 'chuncked encoding error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
 
     _proxy_sock.send(pack('i', -1))

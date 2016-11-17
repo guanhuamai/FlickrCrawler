@@ -60,7 +60,7 @@ def data_guard(sock_conn, data_pool):
             if is_exit(bin_pic_path):
                 break
             sock_conn.send('ready'.encode('utf-8'))
-            pic_data = sock_conn.recv(102400)  # receive picture data
+            pic_data = sock_conn.recv(10240000)  # receive picture data 100KB is not enough...
             if is_exit(pic_data):
                 break
 
