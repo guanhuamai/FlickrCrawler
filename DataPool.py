@@ -1,6 +1,6 @@
 import socket
 import threading
-
+import time
 from os import path
 from struct import pack
 from struct import unpack
@@ -11,9 +11,9 @@ class DataPool(object):
         self.__data_list = list()
         self.__lock = threading.Lock()
 
-    def read_data(self, path):
+    def read_data(self, d_path):
         self.__lock.acquire()
-        with open(path, 'r') as data_file:
+        with open(d_path, 'r') as data_file:
             self.__data_list = data_file.readlines()
         self.__lock.release()
 
@@ -35,10 +35,26 @@ def is_exit(bin_request):
     return len(bin_request) == 4 and unpack('i', bin_request)[0] == -1
 
 
+def safe_download(sock_conn):  # the end of file must be 'maiguanhua' encoding in utf-8
+    _buffer = ''
+    while True:
+        _buffer += sock_conn.recv(1048576)
+        if len(_buffer) >= 10:
+            try:
+                eodata = _buffer[len(_buffer) - 10: len(_buffer)].decode('utf-8')
+                if eodata == 'maiguanhua':
+                    print 'maiguanhua found, exit...\n'
+                    break
+            except UnicodeDecodeError:
+                print 'maiguanhua not found, continue downloading..\n'
+    return _buffer[:len(_buffer) - 10]  # strip end of picture mark
+
+
 def data_guard(sock_conn, data_pool):
+    bin_pic_path = None
     while True:
         #  print 'allocate %d to %s:%s\n' % (cur_id, addr[0], addr[1])
-        req = sock_conn.recv(1024)
+        req = sock_conn.recv(10240)
 
         if is_exit(req):  # request exit
             break
@@ -54,21 +70,27 @@ def data_guard(sock_conn, data_pool):
             num_urls = data_pool.num_data()
             sock_conn.send(pack('i', num_urls))
 
-        elif len(req) == 4 and unpack('i', req)[0] == 300:  # 300: request to save picture
+        elif len(req) == 4 and unpack('i', req)[0] == 300:  # 300: request to post picture path
             sock_conn.send('ready'.encode('utf-8'))
-            bin_pic_path = sock_conn.recv(1024)  # receive picture path
+            bin_pic_path = sock_conn.recv(10240)  # receive picture path
+            print 'piture path: ', bin_pic_path.decode('utf-8')
             if is_exit(bin_pic_path):
                 break
+            sock_conn.send('finish'.encode('utf-8'))
+
+        elif len(req) == 4 and unpack('i', req)[0] == 400:  # 400: request to save picture
             sock_conn.send('ready'.encode('utf-8'))
-            pic_data = sock_conn.recv(10240000)  # receive picture data 100KB is not enough...
+            pic_data = safe_download(sock_conn)  # receive picture data 100KB is not enough...
             if is_exit(pic_data):
                 break
-
             pic_path = bin_pic_path.decode('utf-8')
             with open(pic_path, 'wb') as pic_file:  # save the picture
+                print pic_path, 'writing images! length: ', len(pic_data)
                 pic_file.write(pic_data)
+            sock_conn.send('finish'.encode('utf-8'))
 
         else:
+            print len(req), req
             print 'not match anything!!'
             break
     print 'close service!\n'
@@ -85,5 +107,6 @@ def data_service(local_port):
     _data_pool.read_data(path.join('..', 'url_0_1.2M', 'url_0_1.2M.txt'))
     while True:
         _sock_conn, _addr = sock.accept()
+        print _addr
         t = threading.Thread(target=data_guard, args=(_sock_conn, _data_pool))
         t.start()

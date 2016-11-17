@@ -37,7 +37,7 @@ def get_active_proxy(sock_conn):
     return _proxy
 
 
-def get_next_url(sock_conn):
+def get_next_url(sock_conn):  # send, recv
     _url = None
     while _url is None:
         sock_conn.send(pack('i', 100))
@@ -57,21 +57,40 @@ def get_next_url(sock_conn):
     return _url
 
 
-def write_img(img_content, img_path, sock_conn, d_lock):
+def post_path(img_path, sock_conn, d_lock):  # send, recv, send
     d_lock.acquire()
     try:
         sock_conn.send(pack('i', 300))
         ret = sock_conn.recv(1024).decode('utf-8')
         if ret == 'ready':
+            print img_path
             sock_conn.send(img_path.encode('utf-8'))
-            if sock_conn.recv(1024).decode('utf-8') == 'ready':
-                sock_conn.send(img_content)
-            else:
-                sock_conn.send(pack('i', -1))
         else:
             sock_conn.send(pack('i', -1))
+        print 'post picture path ', sock_conn.recv(1024).decode('utf-8')
     finally:
         d_lock.release()
+
+
+def save_pic(img_content, sock_conn, d_lock):
+    d_lock.acquire()
+    try:
+        sock_conn.send(pack('i', 400))
+        ret = sock_conn.recv(1024).decode('utf-8')
+        if ret == 'ready':
+            print 'writing image, length = %d\n' % len(img_content)
+            eodata = 'maiguanhua'.encode('utf-8')
+            sock_conn.send(img_content + eodata)
+        else:
+            sock_conn.send(pack('i', -1))
+        print 'upload picture ', sock_conn.recv(1024).decode('utf-8')
+    finally:
+        d_lock.release()
+
+
+def write_img(img_content, img_path, sock_conn, d_lock):
+    post_path(img_path, sock_conn, d_lock)
+    save_pic(img_content, sock_conn, d_lock)
 
 
 def get_next_task(sock_conn, d_lock):
@@ -152,8 +171,6 @@ def corout_crawl(p_addr, d_addr):
                 print 'chuncked encoding error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
 
-    _proxy_sock.send(pack('i', -1))
-    _data_sock.send(pack('i', -1))
     _proxy_sock.close()
     _data_sock.close()
 

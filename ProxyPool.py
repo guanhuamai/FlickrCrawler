@@ -27,7 +27,6 @@ class ProxyPool(object):
             if html.status_code != 200:
                 return list()  # return empty list
             html_text = html.text
-            print html_text
         except SSLError:
             pass
         except ConnectionError:
@@ -64,7 +63,6 @@ def proxy_guard(sock_conn, proxy_pool):
         if len(req) == 4 and unpack('i', req)[0] == 400:  # 400: request proxy
             _proxies = proxy_pool.get_proxy()
             if len(_proxies) != 0:
-                print 'allocate %s' % _proxies
                 sock_conn.send(_proxies[0].encode('utf-8'))
             else:
                 sock_conn.send('failure'.encode('utf-8'))
