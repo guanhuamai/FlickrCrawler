@@ -78,7 +78,7 @@ def data_guard(sock_conn, data_pool):
 
 def data_service(local_port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(('127.0.0.1', local_port))
+    sock.bind(('10.214.147.34', local_port))
     sock.listen(10000)
 
     _data_pool = DataPool()

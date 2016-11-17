@@ -7,6 +7,7 @@ from struct import pack
 from bs4 import BeautifulSoup
 from requests.exceptions import SSLError, ConnectionError, Timeout
 from os import path
+import threading
 
 monkey.patch_all()
 
@@ -37,35 +38,46 @@ def get_next_url(sock_conn):
     _url = None
     while _url is None:
         sock_conn.send(pack('i', 100))
-        ret = sock_conn.recv(10240).decode('utf-8')
-        if ret == 'failure':
-            print 'get url failed, no more url perhaps'
-            break
-        else:
-            _url = ret
+        try:
+            ret = sock_conn.recv(10240).decode('utf-8')
+            if ret == 'failure':
+                print 'get url failed, no more url perhaps'
+                break
+            else:
+                _url = ret
+        except UnicodeDecodeError:
+            print 'decode error line 40...\n'
     return _url
 
 
-def write_img(img_content, img_path, sock_conn):
-    sock_conn.send(pack('i', 300))
-    ret = sock_conn.recv(1024).decode('utf-8')
-    if ret == 'ready':
-        sock_conn.send(img_path.encode('utf-8'))
-        if sock_conn.recv(1024).decode('utf-8') == 'ready':
-            sock_conn.send(img_content)
+def write_img(img_content, img_path, sock_conn, d_lock):
+    d_lock.acquire()
+    try:
+        sock_conn.send(pack('i', 300))
+        ret = sock_conn.recv(1024).decode('utf-8')
+        if ret == 'ready':
+            sock_conn.send(img_path.encode('utf-8'))
+            if sock_conn.recv(1024).decode('utf-8') == 'ready':
+                sock_conn.send(img_content)
+            else:
+                sock_conn.send(pack('i', -1))
         else:
             sock_conn.send(pack('i', -1))
-    else:
-        sock_conn.send(pack('i', -1))
+    finally:
+        d_lock.release()
 
 
-def get_next_task(sock_conn):
-    id_url = get_next_url(sock_conn)
-    if id_url is None:
-        return None, None
-    str_id = id_url.split(' ')[0]
-    str_url = id_url.split(' ')[1].strip('\n')
-    return str_id, str_url
+def get_next_task(sock_conn, d_lock):
+    d_lock.acquire()
+    try:
+        id_url = get_next_url(sock_conn)
+        if id_url is None:
+            return None, None
+        str_id = id_url.split(' ')[0]
+        str_url = id_url.split(' ')[1].strip('\n')
+        return str_id, str_url
+    finally:
+        d_lock.release()
 
 
 def corout_crawl(p_addr, d_addr):
@@ -74,12 +86,14 @@ def corout_crawl(p_addr, d_addr):
     _proxy_sock.connect(p_addr)
     _data_sock.connect(d_addr)
 
+    _data_lock = threading.Lock()
+
     _proxy = get_active_proxy(_proxy_sock)
 
     pattern1 = re.compile(r"http://www\.flickr\.com/photos/.*")
     pattern2 = re.compile(r"http://.*\.jpg\$")
 
-    _id, _url = get_next_task(_data_sock)
+    _id, _url = get_next_task(_data_sock, _data_lock)
     while True:
         if _proxy is None or _id is None or _url is None:
             break
@@ -95,8 +109,8 @@ def corout_crawl(p_addr, d_addr):
                 resp = requests.get('http:' + img_url, proxies=proxies, timeout=8)
                 if resp.status_code == 200:
                     print 'start writing image %s' % _id+'.jpg'
-                    write_img(resp.content, path.join('..', 'FlickrPictures', _id+'.jpg'), _data_sock)
-                    _id, _url = get_next_task(_data_sock)
+                    write_img(resp.content, path.join('..', 'FlickrPictures', _id+'.jpg'), _data_sock, _data_lock)
+                    _id, _url = get_next_task(_data_sock, _data_lock)
             except SSLError:
                 print 'ssl error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
@@ -108,13 +122,13 @@ def corout_crawl(p_addr, d_addr):
                 _proxy = get_active_proxy(_proxy_sock)
             except TypeError:
                 print 'type error...'
-                _id, _url = get_next_task(_data_sock)
+                _id, _url = get_next_task(_data_sock, _data_lock)
 
         elif pattern2.match(_url):
             try:
                 resp = requests.get(_url, proxies=proxies, timeout=8)
                 if resp.status_code == 200:
-                    write_img(resp.content, path.join('FlickrPictures', _id+'.jpg'), _data_sock)
+                    write_img(resp.content, path.join('FlickrPictures', _id+'.jpg'), _data_sock, _data_lock)
             except SSLError:
                 print 'ssl error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
@@ -132,7 +146,7 @@ def corout_crawl(p_addr, d_addr):
 
 
 def slave_do(p_addr, d_addr):  # addr = ('127.0.0.1', 9999)
-    gevent.joinall([gevent.spawn(corout_crawl, p_addr, d_addr) for _ in range(100)])
+    gevent.joinall([gevent.spawn(corout_crawl, p_addr, d_addr) for _ in range(200)])
 
 if __name__ == '__main__':
-    slave_do(('127.0.0.1', 9999), ('127.0.0.1', 9998))
+    slave_do(('10.214.147.34', 9999), ('10.214.147.34', 9998))

@@ -10,7 +10,7 @@ from requests.exceptions import SSLError, ConnectionError
 
 class ProxyPool(object):
 
-    def __init__(self, capacity=10):
+    def __init__(self, capacity=100):
         self.__list_proxies = list()
         self.__lock = threading.Lock()
         self.__capacity = capacity
@@ -20,8 +20,10 @@ class ProxyPool(object):
         pattern = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}")
         html_text = ''
         try:
-            html = requests.get('http://tpv.daxiangdaili.com/ip/?tid='
-                                '&num=%d&delay=5&foreign=only' % self.__capacity)
+            html = requests.get('http://dev.kuaidaili.com/api/getproxy/?'
+                                'orderid=&num=%d'
+                                '&protocol=1&method=1&an_tr=1'
+                                '&an_an=1&an_ha=1&quality=1&sort=1&sep=1' % self.__capacity)
             if html.status_code != 200:
                 return list()  # return empty list
             html_text = html.text
@@ -77,7 +79,7 @@ def proxy_guard(sock_conn, proxy_pool):
 
 def proxy_service(local_port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(('127.0.0.1', local_port))
+    sock.bind(('10.214.147.34', local_port))
     sock.listen(10000)
 
     _proxy_pool = ProxyPool()
