@@ -21,7 +21,7 @@ class ProxyPool(object):
         html_text = ''
         try:
             html = requests.get('http://dev.kuaidaili.com/api/getproxy/?'
-                                'orderid=987930576115012&num=%d'
+                                'orderid=&num=%d'
                                 '&protocol=1&method=1&an_tr=1'
                                 '&an_an=1&an_ha=1&quality=1&sort=1&sep=1' % self.__capacity)
             if html.status_code != 200:
