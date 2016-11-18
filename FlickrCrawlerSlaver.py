@@ -101,7 +101,7 @@ def get_next_task(sock_conn, d_lock):
     return str_task
 
 
-def corout_crawl(p_addr, d_addr):
+def corout_crawl(p_addr, d_addr, corout_id):
     _proxy_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     _data_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     _proxy_sock.connect(p_addr)
@@ -112,13 +112,13 @@ def corout_crawl(p_addr, d_addr):
     _proxy = get_active_proxy(_proxy_sock)
 
     pattern1 = re.compile(r"http://www\.flickr\.com/photos/.*")
-    pattern2 = re.compile(r"http://.*\.jpg\$")
+    pattern2 = re.compile(r"http://.*\.jpg")
 
     _id, _url = get_next_task(_data_sock, _data_lock)
     cnt = 0
     while True:
         cnt += 1
-        print 'requesting ', cnt
+        print '%d coroute requesting %d\n' % (corout_id, cnt)
         if _proxy is None or _id is None or _url is None:
             break
         proxies = {'http': 'http://' + _proxy, 'https': 'https://' + _proxy}
@@ -148,7 +148,8 @@ def corout_crawl(p_addr, d_addr):
             try:
                 resp = requests.get(_url, proxies=proxies, timeout=8)
                 if resp.status_code == 200:
-                    write_img(resp.content, path.join('FlickrPictures', _id+'.jpg'), _data_sock, _data_lock)
+                    write_img(resp.content, path.join('..', 'FlickrPictures', _id + '.jpg'), _data_sock, _data_lock)
+                    _id, _url = get_next_task(_data_sock, _data_lock)
             except SSLError:
                 _proxy = get_active_proxy(_proxy_sock)
             except ConnectionError:
@@ -157,13 +158,15 @@ def corout_crawl(p_addr, d_addr):
                 _proxy = get_active_proxy(_proxy_sock)
             except ChunkedEncodingError:
                 _proxy = get_active_proxy(_proxy_sock)
+        else:
+            print 'unknown format %s\n' % _url
 
     _proxy_sock.close()
     _data_sock.close()
 
 
 def slave_do(p_addr, d_addr):  # addr = ('127.0.0.1', 9999)
-    gevent.joinall([gevent.spawn(corout_crawl, p_addr, d_addr) for _ in range(200)])
+    gevent.joinall([gevent.spawn(corout_crawl, p_addr, d_addr, i) for i in range(200)])
 
 if __name__ == '__main__':
     slave_do(('10.214.147.34', 9999), ('10.214.147.34', 9998))
