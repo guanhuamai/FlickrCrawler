@@ -118,7 +118,7 @@ def corout_crawl(p_addr, d_addr, corout_id):
     cnt = 0
     while True:
         cnt += 1
-        print '%d coroute requesting %d\n' % (corout_id, cnt)
+        print '%d coroute requesting %d %s\n' % (corout_id, cnt, _url)
         if _proxy is None or _id is None or _url is None:
             break
         proxies = {'http': 'http://' + _proxy, 'https': 'https://' + _proxy}
@@ -160,6 +160,7 @@ def corout_crawl(p_addr, d_addr, corout_id):
                 _proxy = get_active_proxy(_proxy_sock)
         else:
             print 'unknown format %s\n' % _url
+            raise Exception
 
     _proxy_sock.close()
     _data_sock.close()
