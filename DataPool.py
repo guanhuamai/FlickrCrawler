@@ -1,6 +1,5 @@
 import socket
 import threading
-import time
 from os import path
 from struct import pack
 from struct import unpack

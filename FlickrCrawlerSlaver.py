@@ -33,7 +33,6 @@ def get_active_proxy(sock_conn):
                 _proxy = None
             except ChunkedEncodingError:
                 _proxy = None
-    print 'successfully got proxy %s\n' % _proxy
     return _proxy
 
 
@@ -44,15 +43,12 @@ def get_next_url(sock_conn):  # send, recv
         try:
             ret = sock_conn.recv(10240).decode('utf-8')
             if ret == 'failure':
-                print 'get url failed, no more url perhaps'
                 break
             else:
                 _url = ret
         except UnicodeDecodeError:
-            print 'decode error line 40...\n'
             break
         except sock_error:
-            print 'socket error'
             break
     return _url
 
@@ -63,11 +59,10 @@ def post_path(img_path, sock_conn, d_lock):  # send, recv, send
         sock_conn.send(pack('i', 300))
         ret = sock_conn.recv(1024).decode('utf-8')
         if ret == 'ready':
-            print img_path
             sock_conn.send(img_path.encode('utf-8'))
         else:
             sock_conn.send(pack('i', -1))
-        print 'post picture path ', sock_conn.recv(1024).decode('utf-8')
+        print 'upload picture path', sock_conn.recv(1024).decode('utf-8')
     finally:
         d_lock.release()
 
@@ -78,12 +73,11 @@ def save_pic(img_content, sock_conn, d_lock):
         sock_conn.send(pack('i', 400))
         ret = sock_conn.recv(1024).decode('utf-8')
         if ret == 'ready':
-            print 'writing image, length = %d\n' % len(img_content)
             eodata = 'maiguanhua'.encode('utf-8')
             sock_conn.send(img_content + eodata)
         else:
             sock_conn.send(pack('i', -1))
-        print 'upload picture ', sock_conn.recv(1024).decode('utf-8')
+        print 'save picture', sock_conn.recv(1024).decode('utf-8')
     finally:
         d_lock.release()
 
@@ -124,7 +118,6 @@ def corout_crawl(p_addr, d_addr):
         if _proxy is None or _id is None or _url is None:
             break
         proxies = {'http': 'http://' + _proxy, 'https': 'https://' + _proxy}
-        print _id, _url
 
         if pattern1.match(_url):
             try:
@@ -134,23 +127,17 @@ def corout_crawl(p_addr, d_addr):
 
                 resp = requests.get('http:' + img_url, proxies=proxies, timeout=8)
                 if resp.status_code == 200:
-                    print 'start writing image %s' % _id+'.jpg'
                     write_img(resp.content, path.join('..', 'FlickrPictures', _id+'.jpg'), _data_sock, _data_lock)
                     _id, _url = get_next_task(_data_sock, _data_lock)
             except SSLError:
-                print 'ssl error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
             except ConnectionError:
-                print 'connection error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
             except Timeout:
-                print 'timeout error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
             except ChunkedEncodingError:
-                print 'chuncked encoding error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
             except TypeError:
-                print 'type error...'
                 _id, _url = get_next_task(_data_sock, _data_lock)
 
         elif pattern2.match(_url):
@@ -159,16 +146,12 @@ def corout_crawl(p_addr, d_addr):
                 if resp.status_code == 200:
                     write_img(resp.content, path.join('FlickrPictures', _id+'.jpg'), _data_sock, _data_lock)
             except SSLError:
-                print 'ssl error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
             except ConnectionError:
-                print 'connection error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
             except Timeout:
-                print 'timeout error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
             except ChunkedEncodingError:
-                print 'chuncked encoding error, retrieve another proxy...\n'
                 _proxy = get_active_proxy(_proxy_sock)
 
     _proxy_sock.close()
@@ -176,7 +159,7 @@ def corout_crawl(p_addr, d_addr):
 
 
 def slave_do(p_addr, d_addr):  # addr = ('127.0.0.1', 9999)
-    gevent.joinall([gevent.spawn(corout_crawl, p_addr, d_addr) for _ in range(200)])
+    gevent.joinall([gevent.spawn(corout_crawl, p_addr, d_addr) for _ in range(10)])
 
 if __name__ == '__main__':
     slave_do(('10.214.147.34', 9999), ('10.214.147.34', 9998))
