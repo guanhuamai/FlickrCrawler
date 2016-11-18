@@ -88,16 +88,17 @@ def write_img(img_content, img_path, sock_conn, d_lock):
 
 
 def get_next_task(sock_conn, d_lock):
+    str_task = None, None
     d_lock.acquire()
     try:
         id_url = get_next_url(sock_conn)
-        if id_url is None:
-            return None, None
-        str_id = id_url.split(' ')[0]
-        str_url = id_url.split(' ')[1].strip('\n')
-        return str_id, str_url
+        if id_url is not None:
+            str_id = id_url.split(' ')[0]
+            str_url = id_url.split(' ')[1].strip('\n')
+            str_task = str_id, str_url
     finally:
         d_lock.release()
+    return str_task
 
 
 def corout_crawl(p_addr, d_addr):
@@ -114,7 +115,10 @@ def corout_crawl(p_addr, d_addr):
     pattern2 = re.compile(r"http://.*\.jpg\$")
 
     _id, _url = get_next_task(_data_sock, _data_lock)
+    cnt = 0
     while True:
+        cnt += 1
+        print 'requesting ', cnt
         if _proxy is None or _id is None or _url is None:
             break
         proxies = {'http': 'http://' + _proxy, 'https': 'https://' + _proxy}
@@ -159,7 +163,7 @@ def corout_crawl(p_addr, d_addr):
 
 
 def slave_do(p_addr, d_addr):  # addr = ('127.0.0.1', 9999)
-    gevent.joinall([gevent.spawn(corout_crawl, p_addr, d_addr) for _ in range(10)])
+    gevent.joinall([gevent.spawn(corout_crawl, p_addr, d_addr) for _ in range(200)])
 
 if __name__ == '__main__':
     slave_do(('10.214.147.34', 9999), ('10.214.147.34', 9998))

@@ -37,15 +37,22 @@ def is_exit(bin_request):
 def safe_download(sock_conn):  # the end of file must be 'maiguanhua' encoding in utf-8
     _buffer = ''
     while True:
-        _buffer += sock_conn.recv(1048576)
-        if len(_buffer) >= 10:
-            try:
-                eodata = _buffer[len(_buffer) - 10: len(_buffer)].decode('utf-8')
-                if eodata == 'maiguanhua':
-                    print 'maiguanhua found, exit...\n'
-                    break
-            except UnicodeDecodeError:
-                print 'maiguanhua not found, continue downloading..\n'
+        try:
+            sock_conn.settimeout(10)
+            _buffer += sock_conn.recv(1048576)
+            if len(_buffer) >= 10:
+                try:
+                    eodata = _buffer[len(_buffer) - 10: len(_buffer)].decode('utf-8')
+                    if eodata == 'maiguanhua':
+                        print 'maiguanhua found, exit...\n'
+                        break
+                except UnicodeDecodeError:
+                    print 'maiguanhua not found, continue downloading.. ', len(_buffer)
+        except socket.timeout:
+            print 'socket time out...'
+            return _buffer
+        finally:
+            sock_conn.settimeout(None)
     return _buffer[:len(_buffer) - 10]  # strip end of picture mark
 
 
