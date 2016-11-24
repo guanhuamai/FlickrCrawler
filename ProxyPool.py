@@ -4,6 +4,7 @@ import requests
 import threading
 import time
 
+from os import path
 from struct import pack
 from struct import unpack
 from requests.exceptions import SSLError, ConnectionError
@@ -15,16 +16,17 @@ class ProxyPool(object):
         self.__list_proxies = list()
         self.__lock = threading.Lock()
         self.__capacity = capacity
+        with open(path.join('..', 'properties')) as f:
+            self.__tid = int(f.readline())
+        print self.__tid
 
     def __elephant_proxies(self):
         print 'requesting %d proxies from elephant...\n' % self.__capacity
         pattern = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}")
         html_text = ''
         try:
-            html = requests.get('http://dev.kuaidaili.com/api/getproxy/?'
-                                'orderid=&num=%d'
-                                '&protocol=1&method=1&an_tr=1'
-                                '&an_an=1&an_ha=1&quality=1&sort=1&sep=1' % self.__capacity)
+            html = requests.get('http://tpv.daxiangdaili.com/ip/?tid=%d&num=%d&foreign=only'
+                                % self.__tid, self.__capacity)
             if html.status_code != 200:
                 return list()  # return empty list
             html_text = html.text

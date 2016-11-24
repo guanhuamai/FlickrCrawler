@@ -110,7 +110,7 @@ def data_service(local_port):
     sock.listen(10000)
 
     _data_pool = DataPool()
-    _data_pool.read_data(path.join('..', 'url_0_1.2M', 'url_0_1.2M.txt'))
+    _data_pool.read_data(path.join('..', 'url_1.2M_3M', '\url_1.2M_3M.txt'))
     while True:
         _sock_conn, _addr = sock.accept()
         print _addr
