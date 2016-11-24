@@ -26,7 +26,7 @@ class ProxyPool(object):
         html_text = ''
         try:
             html = requests.get('http://tpv.daxiangdaili.com/ip/?tid=%d&num=%d&foreign=only'
-                                % self.__tid, self.__capacity)
+                                % (self.__tid, self.__capacity))
             if html.status_code != 200:
                 return list()  # return empty list
             html_text = html.text

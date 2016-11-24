@@ -148,7 +148,7 @@ def corout_crawl(p_addr, d_addr, corout_id):
             try:
                 resp = requests.get(_url, proxies=proxies, timeout=8)
                 if resp.status_code == 200:
-                    write_img(resp.content, path.join('..', 'FlickrPictures', _id + '.jpg'), _data_sock, _data_lock)
+                    write_img(resp.content, path.join('..', 'FlickrPictures2', _id + '.jpg'), _data_sock, _data_lock)
                     _id, _url = get_next_task(_data_sock, _data_lock)
             except SSLError:
                 _proxy = get_active_proxy(_proxy_sock)
