@@ -8,7 +8,17 @@ from struct import pack
 from bs4 import BeautifulSoup
 from requests.exceptions import SSLError, ConnectionError, Timeout, ChunkedEncodingError
 from os import path
+import logging
+
 import threading
+
+logging.basicConfig(level=logging.WARNING,
+                    format='%(asctime)s %(filename)s[line:%(lineno)s] %(levelname)s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S',
+                    filename='crawler.log',
+                    filemode='a')
+
+logging.warning('hello world!')
 
 monkey.patch_all()
 
@@ -89,19 +99,24 @@ def write_img(img_content, img_path, sock_conn, d_lock):
 
 def get_next_task(sock_conn, d_lock):
     str_task = None, None
+    wrong_url = ''
     d_lock.acquire()
     try:
         id_url = get_next_url(sock_conn)
+        wrong_url = id_url
         if id_url is not None:
             str_id = id_url.split(' ')[0]
             str_url = id_url.split(' ')[1].strip('\n')
             str_task = str_id, str_url
+    except IndexError:
+        logging.warning('wrong url', wrong_url)
     finally:
         d_lock.release()
     return str_task
 
 
 def corout_crawl(p_addr, d_addr, corout_id):
+
     _proxy_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     _data_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     _proxy_sock.connect(p_addr)
@@ -131,7 +146,7 @@ def corout_crawl(p_addr, d_addr, corout_id):
 
                 resp = requests.get('http:' + img_url, proxies=proxies, timeout=8)
                 if resp.status_code == 200:
-                    write_img(resp.content, path.join('..', 'FlickrPictures', _id+'.jpg'), _data_sock, _data_lock)
+                    write_img(resp.content, path.join('..', 'FlickrPictures2', _id+'.jpg'), _data_sock, _data_lock)
                     _id, _url = get_next_task(_data_sock, _data_lock)
             except SSLError:
                 _proxy = get_active_proxy(_proxy_sock)
@@ -159,8 +174,8 @@ def corout_crawl(p_addr, d_addr, corout_id):
             except ChunkedEncodingError:
                 _proxy = get_active_proxy(_proxy_sock)
         else:
-            print 'unknown format %s\n' % _url
-            raise Exception
+            logging.warning('unknown format %s\n' % _url)
+            _id, _url = get_next_task(_data_sock, _data_lock)
 
     _proxy_sock.close()
     _data_sock.close()

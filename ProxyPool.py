@@ -3,11 +3,20 @@ import socket
 import requests
 import threading
 import time
+import logging
 
 from os import path
 from struct import pack
 from struct import unpack
 from requests.exceptions import SSLError, ConnectionError
+
+logging.basicConfig(level=logging.WARNING,
+                    format='%(asctime)s %(filename)s[line:%(lineno)s] %(levelname)s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S',
+                    filename='proxypool.log',
+                    filemode='a')
+
+logging.warning('hello world!')
 
 
 class ProxyPool(object):
@@ -18,10 +27,10 @@ class ProxyPool(object):
         self.__capacity = capacity
         with open(path.join('..', 'properties')) as f:
             self.__tid = int(f.readline())
-        print self.__tid
+        logging.warning(self.__tid)
 
     def __elephant_proxies(self):
-        print 'requesting %d proxies from elephant...\n' % self.__capacity
+        logging.warning('requesting %d proxies from elephant...\n' % self.__capacity)
         pattern = re.compile(r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}:\d{1,5}")
         html_text = ''
         try:
@@ -73,7 +82,7 @@ def proxy_guard(sock_conn, proxy_pool):
                 sock_conn.send('failure'.encode('utf-8'))
 
         else:
-            print 'not match anything!!'
+            logging.warning('not match anything!!')
             break
 
     sock_conn.send(pack('i', -1))

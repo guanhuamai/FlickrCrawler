@@ -1,8 +1,18 @@
 import socket
+import logging
 import threading
 from os import path
 from struct import pack
 from struct import unpack
+
+
+logging.basicConfig(level=logging.WARNING,
+                    format='%(asctime)s %(filename)s[line:%(lineno)s] %(levelname)s %(message)s',
+                    datefmt='%a, %d %b %Y %H:%M:%S',
+                    filename='datapool.log',
+                    filemode='a')
+
+logging.warning('hello world!')
 
 
 class DataPool(object):
@@ -49,7 +59,7 @@ def safe_download(sock_conn):  # the end of file must be 'maiguanhua' encoding i
                 except UnicodeDecodeError:
                     print 'maiguanhua not found, continue downloading.. ', len(_buffer)
         except socket.timeout:
-            print 'socket time out...'
+            logging.warning('socket time out...')
             return _buffer
         finally:
             sock_conn.settimeout(None)
@@ -96,10 +106,10 @@ def data_guard(sock_conn, data_pool):
             sock_conn.send('finish'.encode('utf-8'))
 
         else:
-            print len(req), req
-            print 'not match anything!!'
+            logging.warning(len(req), req)
+            logging.warning('not match anything!!')
             break
-    print 'close service!\n'
+    logging.warning('close service!\n')
     sock_conn.send(pack('i', -1))
     sock_conn.close()
 
