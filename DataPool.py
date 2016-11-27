@@ -1,6 +1,7 @@
 import socket
 import logging
 import threading
+import sys
 from os import path
 from struct import pack
 from struct import unpack
@@ -126,3 +127,10 @@ def data_service(local_port):
         print _addr
         t = threading.Thread(target=data_guard, args=(_sock_conn, _data_pool))
         t.start()
+
+
+if __name__ == '__main__':
+    err_f = open("datapool.stderr", 'w')
+    sys.stderr = err_f
+    data_service(9998)
+    err_f.close()

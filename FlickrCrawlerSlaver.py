@@ -2,15 +2,17 @@ import re
 import socket
 from socket import error as sock_error
 import requests
+import logging
+import threading
+import sys
 import gevent
+
 from gevent import monkey
 from struct import pack
 from bs4 import BeautifulSoup
 from requests.exceptions import SSLError, ConnectionError, Timeout, ChunkedEncodingError
 from os import path
-import logging
 
-import threading
 
 logging.basicConfig(level=logging.WARNING,
                     format='%(asctime)s %(filename)s[line:%(lineno)s] %(levelname)s %(message)s',
@@ -109,7 +111,9 @@ def get_next_task(sock_conn, d_lock):
             str_url = id_url.split(' ')[1].strip('\n')
             str_task = str_id, str_url
     except IndexError:
-        logging.warning('wrong url', wrong_url)
+        logging.warning('wrong url, index error', wrong_url)
+    except TypeError:
+        logging.warning('wrong url, type error', str(type(wrong_url)))
     finally:
         d_lock.release()
     return str_task
@@ -182,7 +186,10 @@ def corout_crawl(p_addr, d_addr, corout_id):
 
 
 def slave_do(p_addr, d_addr):  # addr = ('127.0.0.1', 9999)
-    gevent.joinall([gevent.spawn(corout_crawl, p_addr, d_addr, i) for i in range(200)])
+    gevent.joinall([gevent.spawn(corout_crawl, p_addr, d_addr, i) for i in range(300)])
 
 if __name__ == '__main__':
+    err_f = open("slaver.stderr" + sys.argv[1], 'w')
     slave_do(('10.214.147.34', 9999), ('10.214.147.34', 9998))
+    sys.stderr = err_f
+    err_f.close()

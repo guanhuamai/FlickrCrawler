@@ -4,6 +4,7 @@ import requests
 import threading
 import time
 import logging
+import sys
 
 from os import path
 from struct import pack
@@ -99,3 +100,10 @@ def proxy_service(local_port):
         _sock_conn, _addr = sock.accept()
         t = threading.Thread(target=proxy_guard, args=(_sock_conn, _proxy_pool))
         t.start()
+
+
+if __name__ == '__main__':
+    err_f = open("proxypool.stderr", 'w')
+    sys.stderr = err_f
+    proxy_service(9999)
+    err_f.close()
